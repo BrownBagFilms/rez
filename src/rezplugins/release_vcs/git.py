@@ -4,7 +4,8 @@ Git version control
 from rez.release_vcs import ReleaseVCS
 from rez.utils.logging_ import print_error, print_warning, print_debug
 from rez.exceptions import ReleaseVCSError
-from rez.vendor.sh.sh import git
+# from rez.vendor.sh.sh import git
+import subprocess
 from shutil import rmtree
 import functools
 import os.path
@@ -224,9 +225,13 @@ class GitReleaseVCS(ReleaseVCS):
 
         with retain_cwd():
             os.chdir(path_)
-            git.clone(url, dirname)
+            # git.clone(url, dirname)
+            p = subprocess.Popen(["git", "clone", url, dirname])
+            p.wait()
             os.chdir(path)
-            git.checkout(commit)
+            # git.checkout(commit)
+            p = subprocess.Popen(["git", "checkout", commit])
+            p.wait()
             rmtree(gitdir)
 
 
