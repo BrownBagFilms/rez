@@ -4,8 +4,6 @@ Git version control
 from rez.release_vcs import ReleaseVCS
 from rez.utils.logging_ import print_error, print_warning, print_debug
 from rez.exceptions import ReleaseVCSError
-# from rez.vendor.sh.sh import git
-import subprocess
 from shutil import rmtree
 import functools
 import os.path
@@ -79,8 +77,11 @@ class GitReleaseVCS(ReleaseVCS):
                                   "--symbolic-full-name", "@{u}")[0]
             return remote_uri.split('/', 1)
         except Exception as e:
-            if ("No upstream branch" not in str(e)
-                    and "No upstream configured" not in str(e)):
+            # capitalization of message changed sometime between git 1.8.3
+            # and 2.12 - used to be "No upstream", now "no upstream"..
+            errmsg = str(e).lower()
+            if ("no upstream branch" not in errmsg
+                    and "no upstream configured" not in errmsg):
                 raise e
         return (None, None)
 
@@ -225,13 +226,9 @@ class GitReleaseVCS(ReleaseVCS):
 
         with retain_cwd():
             os.chdir(path_)
-            # git.clone(url, dirname)
-            p = subprocess.Popen(["git", "clone", url, dirname])
-            p.wait()
+            git.clone(url, dirname)
             os.chdir(path)
-            # git.checkout(commit)
-            p = subprocess.Popen(["git", "checkout", commit])
-            p.wait()
+            git.checkout(commit)
             rmtree(gitdir)
 
 

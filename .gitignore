@@ -9,5 +9,9 @@ dist/
 *~
 docs/_build
 .DS_Store
+<<<<<<< HEAD
 
 .idea/
+=======
+.rez-gen-wiki-tmp
+>>>>>>> 54a7d415910cbe8cf5ba642fc4db27bdcf6b1cea

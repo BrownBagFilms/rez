@@ -12,6 +12,7 @@ from rez.config import config
 from rez.exceptions import RexError, RexUndefinedVariableError, RezSystemError
 from rez.util import shlex_join
 from rez.utils import reraise
+from rez.utils.system import popen
 from rez.utils.sourcecode import SourceCode, SourceCodeError
 from rez.utils.data_utils import AttrDictWrapper
 from rez.utils.formatting import expandvars
@@ -541,7 +542,8 @@ class Python(ActionInterpreter):
         target_environ: dict
             If target_environ is None or os.environ, interpreted actions are
             applied to the current python interpreter. Otherwise, changes are
-            only applied to target_environ.
+            only applied to target_environ. In either case you must call
+            `apply_environ` to flush all changes to the target environ dict.
 
         passive: bool
             If True, commands that do not update the environment (such as info)
@@ -559,12 +561,17 @@ class Python(ActionInterpreter):
     def set_manager(self, manager):
         self.manager = manager
 
-    def get_output(self, style=OutputStyle.file):
+    def apply_environ(self):
+        """Apply changes to target environ.
+        """
         if self.manager is None:
             raise RezSystemError("You must call 'set_manager' on a Python rex "
                                  "interpreter before using it.")
 
         self.target_environ.update(self.manager.environ)
+
+    def get_output(self, style=OutputStyle.file):
+        self.apply_environ()
         return self.manager.environ
 
     def setenv(self, key, value):
@@ -606,10 +613,10 @@ class Python(ActionInterpreter):
             self.target_environ.update(self.manager.environ)
 
         shell_mode = not hasattr(args, '__iter__')
-        return subprocess.Popen(args,
-                                shell=shell_mode,
-                                env=self.target_environ,
-                                **subproc_kwargs)
+        return popen(args,
+                     shell=shell_mode,
+                     env=self.target_environ,
+                     **subproc_kwargs)
 
     def command(self, value):
         if self.passive:
